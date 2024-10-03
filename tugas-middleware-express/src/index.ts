@@ -38,33 +38,34 @@ function init() {
   app.post( "/api/v1/multiple", upload.array("images", 5), async (req: Request, res: Response) => {
     console.log(req.files);
     try {
-			const files = req.files as Express.Multer.File[];
-			if (!files || files.length === 0) {
-				return res.status(400).json({ message: "No files uploaded" });
-			}
-			const uploadPromises = files.map(async (file) => {
-				const filePath = file.path;
-				return await handleUpload(filePath);
-			});
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
 
-			const results = await Promise.all(uploadPromises);
+      const uploadPromises = files.map(async (file) => {
+        const filePath = file.path;
+        return await handleUpload(filePath);
+      });
 
-			const response = results.map((result) => ({
-				url: result.secure_url,
-				public_id: result.public_id,
-			}));
+      const results = await Promise.all(uploadPromises);
 
-			res.status(201).json({
-				message: "Images uploaded successfully!",
-				files: response,
-			});
-      
-		} catch (error: any) {
-			res.status(500).json({
-				message: "Failed to upload images",
-				error: error.message,
-			});
-		}
+      const response = results.map((result) => ({
+        url: result.secure_url,
+        public_id: result.public_id,
+      }));
+
+      res.status(201).json({
+        message: "Images uploaded successfully!",
+        files: response,
+      });
+
+      } catch (error: any) {
+        res.status(500).json({
+          message: "Failed to upload images",
+          error: error.message,
+        });
+      }
   });
 
   app.listen(PORT, () => {
