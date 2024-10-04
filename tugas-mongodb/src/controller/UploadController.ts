@@ -1,0 +1,53 @@
+import { Request, Response } from "express";
+import { handleUpload, toDataURI } from "../utils";
+
+const singleUpload = async (req: Request, res: Response) => {
+	 if (req?.file === undefined) {
+			res.status(400).send({
+				message: "No file uploaded",
+				data: null,
+			});
+      return
+		}
+		const dataURI = toDataURI(req.file);
+
+		try {
+			const result = await handleUpload(dataURI);
+			res.status(200).send({ message: "File uploaded", data: result });
+		} catch (error) {
+			const _err = error as Error;
+			res.status(400).send({
+				message: "Error uploading file",
+				data: _err.message,
+			});
+		}
+};
+
+const multipleUpload = async (req: Request, res: Response) => {
+	 if (req.files === undefined || req.files?.length === 0) {
+    res.status(400).send({
+      message: "No files uploaded",
+      data: null,
+    });
+    return;
+  }
+  const files = req.files as Express.Multer.File[];
+
+  const dataURIs = files
+    ?.map((file: Express.Multer.File) => toDataURI(file))
+    .map(handleUpload);
+
+  try {
+    const results = await Promise.all(dataURIs);
+    res.status(200).send({ message: "Files uploaded", data: results });
+  } catch (error) {
+    const _err = error as Error;
+    res
+      .status(400)
+      .send({ message: "Error uploading files", data: _err.message });
+  }
+
+  res.status(200).send({ message: "Files uploaded", data: files });
+};
+
+export default { singleUpload, multipleUpload };
