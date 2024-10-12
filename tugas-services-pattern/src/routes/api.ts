@@ -5,16 +5,22 @@ import uploadController from "../controllers/UploadController";
 import productsController from "../controllers/ProductsController";
 import categoriesController from "../controllers/CategoriesController";
 
+import authController from '../controllers/AuthController';
+import authMiddleware from '../middlewares/AuthMiddleware';
+
 const router = express.Router();
 
-// CRUD Categories
+
+router.post("/auth/login",authController.login);
+router.post("/auth/register", authController.register);
+router.post("/auth/me", authMiddleware, authController.me);
+router.put("/auth/update-profile", authMiddleware, authController.updateProfile);
+
 router.get("/categories", categoriesController.findAll);
 router.post("/categories", categoriesController.create);
 router.get("/categories/:id", categoriesController.findOne);
 router.put("/categories/:id", categoriesController.update);
 router.delete("/categories/:id", categoriesController.delete);
-// /categories/:id -> parameter
-// /categories?page=1&limit=10&search=kemeja -> query url
 
 router.get("/products", productsController.findAll);
 router.post("/products", productsController.create);
