@@ -7,13 +7,14 @@ import categoriesController from "../controllers/CategoriesController";
 
 import authController from '../controllers/AuthController';
 import authMiddleware from '../middlewares/AuthMiddleware';
+import rbacMiddleware from '../middlewares/RbacMiddleware';
 
 const router = express.Router();
 
 
 router.post("/auth/login",authController.login);
 router.post("/auth/register", authController.register);
-router.post("/auth/me", authMiddleware, authController.me);
+router.post("/auth/me", [authMiddleware, rbacMiddleware(["admin"])], authController.me);
 router.put("/auth/update-profile", authMiddleware, authController.updateProfile);
 
 router.get("/categories", categoriesController.findAll);
