@@ -1,11 +1,18 @@
 import { Request, Response } from "express";
-import CategoriesModel from "../models/CategoriesModel";
+import {
+	create,
+	findAll,
+	findOne,
+	update,
+	remove,
+} from "../services/CategoriesService";
+import { IPaginationQuery } from "../utils/interfaces";
 
 export default {
   
   async create(req: Request, res: Response) {
     try {
-      const result = await CategoriesModel.create(req.body);
+      const result = await create(req.body);
       res.status(201).json({
         data: result,
         message: "Success create product",
@@ -21,29 +28,37 @@ export default {
 
   async findAll(req: Request, res: Response) {
     try {
-      const search = req.query.search;
-      const page = req.query.page;
-      const limit = req.query.limit;
+     const {
+        limit = 10,
+        page = 1,
+        search,
+      } = req.query as unknown as IPaginationQuery;
 
-      const result = await CategoriesModel.find();
+      const query = {};
+
+      if (search) {
+        Object.assign(query, {
+          name: { $regex: search, $options: "i" },
+        });
+      }
+      const result = await findAll(query, limit, page);
       res.status(200).json({
         data: result,
-        message: "Success get all categories",
+        message: "Success get all products",
       });
     } catch (error) {
       const err = error as Error;
       res.status(500).json({
         data: err.message,
-        message: "Failed get all categories",
+        message: "Failed get all products",
       });
     }
   },
 
   async findOne(req: Request, res: Response) {
     try {
-      const result = await CategoriesModel.findOne({
-        _id: req.params.id,
-      });
+      const result = await findOne(req.params?.id);
+
       res.status(200).json({
         data: result,
         message: "Success get one product",
@@ -59,13 +74,7 @@ export default {
 
   async update(req: Request, res: Response) {
     try {
-      const result = await CategoriesModel.findOneAndUpdate(
-        { _id: req.params.id },
-        req.body,
-        {
-          new: true,
-        }
-      );
+      const result = await update(req.params?.id, req.body);
 
       res.status(200).json({
         data: result,
@@ -82,9 +91,7 @@ export default {
   
   async delete(req: Request, res: Response) {
     try {
-      const result = await CategoriesModel.findOneAndDelete({
-        _id: req.params.id,
-      });
+      const result = await remove(req.params?.id);
 
       res.status(200).json({
         data: result,
